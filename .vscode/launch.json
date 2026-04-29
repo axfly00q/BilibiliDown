@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Run BilibiliDown (FrameMain)",
+            "request": "launch",
+            "mainClass": "nicelee.ui.FrameMain",
+            "projectName": "BilibiliDown-master",
+            "vmArgs": "-Dfile.encoding=utf-8 -Dhttps.protocols=TLSv1.2 -Dbilibili.prop.log=false",
+            "console": "integratedTerminal",
+            "encoding": "UTF-8",
+            "shortenCommandLine": "auto"
+        }
+    ]
+}

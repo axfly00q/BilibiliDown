@@ -1,0 +1,7 @@
+* 优化：添加对url类型https://space.bilibili.com/[0-9]+/lists?sid=[0-9]+`的支持 #289
+* 修复：修复是否点赞的判断失效问题 #287
+* 修复：尝试修复返回412的问题 #295
+* 其它详见[V6.40...V6.41](https://github.com/nICEnnnnnnnLee/BilibiliDown/compare/V6.40...V6.41)
+<hr/>
+
+如果你是Win64用户,且没有java环境，请下载附件`*.win_x64_jre11.release.zip`或 `*.win_x64.msi`

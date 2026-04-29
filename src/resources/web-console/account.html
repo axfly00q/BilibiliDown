@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B 站账号 · BilibiliDown</title>
+<link href="/console/css/style.css" rel="stylesheet">
+<style>
+  .topnav { display:flex; gap:12px; padding:10px 18px; border-bottom:1px solid var(--border); background:var(--surface); flex-wrap:wrap; }
+  .topnav a { text-decoration:none; color:var(--text-muted); font-size:13.5px; }
+  .topnav a.active { color:var(--brand); font-weight:600; }
+  .wrap { max-width: 720px; margin: 18px auto; padding: 0 14px; }
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-md); padding:18px; margin-bottom:14px; }
+  .card h2 { margin:0 0 10px; font-size:15px; }
+  .row { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .face { width:64px; height:64px; border-radius:50%; background:var(--surface-2); object-fit:cover; }
+  .uname { font-size:16px; font-weight:600; }
+  .uid { font-size:12px; color:var(--text-muted); }
+  button { padding:8px 14px; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:6px; cursor:pointer; font-size:13px; }
+  button.primary { background:var(--brand); color:#fff; border-color:var(--brand); }
+  button.danger { color:#c33; }
+  button:disabled { opacity:.6; cursor:not-allowed; }
+  .qr-wrap { display:flex; flex-direction:column; align-items:center; gap:10px; padding:10px; }
+  .qr-wrap img { width:240px; height:240px; background:#fff; padding:8px; border:1px solid var(--border); border-radius:8px; }
+  .qr-status { font-size:13px; color:var(--text-muted); min-height:18px; }
+  .err { color:#e64; font-size:13px; min-height:18px; margin:8px 0; }
+  .toast { position: fixed; right:18px; bottom:18px; padding:10px 14px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; box-shadow:var(--shadow-md); font-size:13px; opacity:0; transform: translateY(8px); transition: all .25s ease; }
+  .toast.show { opacity:1; transform: translateY(0); }
+  @media (max-width: 640px) {
+    .topnav { gap:8px; padding:8px 10px; }
+    .wrap { margin:10px auto; padding:0 8px; }
+    .card { padding:14px; }
+    .qr-wrap img { width: 200px; height:200px; }
+  }
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="/console/index.html" data-i18n="nav.home">首页</a>
+  <a href="/console/parse.html" data-i18n="nav.parse">解析</a>
+  <a href="/console/downloads.html" data-i18n="nav.downloads">下载任务</a>
+  <a href="/console/settings.html" data-i18n="nav.settings">设置</a>
+  <a href="/console/account.html" class="active" data-i18n="nav.account">B 站账号</a>
+  <a href="/console/favorites.html" data-i18n="nav.favorites" data-nav-role="bili">收藏夹</a>
+  <a href="/console/history.html" data-i18n="nav.history" data-nav-role="bili">历史记录</a>
+</nav>
+<main class="wrap">
+  <div class="err" id="err"></div>
+  <section class="card" id="status-card">
+    <h2 data-i18n="account.title.status">登录状态</h2>
+    <div id="status-body" class="row">
+      <span data-i18n="account.loading">加载中...</span>
+    </div>
+  </section>
+  <section class="card" id="qr-card" hidden>
+    <h2 data-i18n="account.title.qr">扫码登录</h2>
+    <div class="qr-wrap">
+      <img id="qr-img" alt="QR Code" src="">
+      <div class="qr-status" id="qr-status" data-i18n="account.qr.tip">请使用手机 B 站 App 扫描二维码</div>
+      <button id="qr-refresh" data-i18n="account.qr.refresh">刷新二维码</button>
+    </div>
+  </section>
+  <section class="card" id="cookie-card" hidden>
+    <h2 data-i18n="account.title.cookie">Cookie 工具</h2>
+    <div class="row">
+      <button id="cookie-refresh" data-i18n="account.cookie.refresh">刷新 Cookie</button>
+      <span id="cookie-status" style="font-size:12.5px;color:var(--text-muted);"></span>
+    </div>
+    <p style="margin:10px 0 0;font-size:12px;color:var(--text-muted);" data-i18n="account.cookie.note">
+      若长期未登录或 Cookie 即将过期，可点此刷新。需要本机能正常访问 B 站。
+    </p>
+  </section>
+</main>
+<div class="toast" id="toast"></div>
+<script type="module" src="/console/js/account.js"></script>
+</body>
+</html>

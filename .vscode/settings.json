@@ -1,0 +1,23 @@
+{
+    "java.project.sourcePaths": [
+        "src",
+        "src-launcher"
+    ],
+    "java.project.outputPath": "bin",
+    "java.project.referencedLibraries": [
+        "libs/*.jar"
+    ],
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "C:\\Users\\Lenovo\\.jdks\\openjdk-24.0.1",
+            "default": true
+        }
+    ],
+    "java.jdt.ls.java.home": "C:\\Users\\Lenovo\\.jdks\\openjdk-24.0.1",
+    "java.import.gradle.enabled": false,
+    "java.import.maven.enabled": false,
+    "java.compile.nullAnalysis.mode": "disabled",
+    "java.configuration.updateBuildConfiguration": "automatic",
+    "files.encoding": "utf8"
+}

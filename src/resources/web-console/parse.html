@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>解析 · BilibiliDown</title>
+<link href="/console/css/style.css" rel="stylesheet">
+<style>
+  .topnav { display:flex; gap:12px; padding:10px 18px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .topnav a { text-decoration:none; color:var(--text-muted); font-size:13.5px; }
+  .topnav a.active { color:var(--brand); font-weight:600; }
+  .wrap { max-width: 980px; margin: 18px auto; padding: 0 14px; }
+  .row { display:flex; gap:8px; }
+  .row input { flex:1; padding:10px 12px; border:1px solid var(--border); border-radius:var(--radius-md);
+    background:var(--surface); color:var(--text); font-size:14px; }
+  .row button { padding:10px 16px; border:0; border-radius:var(--radius-md); background:var(--brand); color:#fff; cursor:pointer; }
+  .err { color:#e64; min-height:18px; margin:8px 0; font-size:13px; }
+  .video-card { display:grid; grid-template-columns: 240px 1fr; gap:18px; margin-top:18px; padding:14px; border:1px solid var(--border); border-radius:var(--radius-md); background:var(--surface); }
+  .video-card img { width:100%; border-radius:6px; }
+  .video-card h2 { margin:0 0 6px; font-size:16px; }
+  .meta { font-size:12.5px; color:var(--text-muted); }
+  .clip { border-top:1px dashed var(--border); padding:10px 0; display:flex; flex-direction:column; gap:4px; }
+  .clip .title { font-size:13.5px; }
+  select, .clip button { padding:6px 10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--text); font-size:13px; }
+  .clip button { background:var(--brand); color:#fff; border:0; cursor:pointer; }
+  .clip button.extra { background:var(--surface-2); color:var(--text); border:1px solid var(--border); }
+  .toast { position: fixed; right:18px; bottom:18px; padding:10px 14px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; box-shadow: var(--shadow-md); font-size:13px; opacity:0; transform: translateY(8px); transition: all .25s ease; }
+  .toast.show { opacity:1; transform: translateY(0); }
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="/console/index.html" data-i18n="nav.home">首页</a>
+  <a href="/console/parse.html" class="active" data-i18n="nav.parse">解析</a>
+  <a href="/console/downloads.html" data-i18n="nav.downloads">下载任务</a>
+  <a href="/console/settings.html" data-i18n="nav.settings">设置</a>
+  <a href="/console/account.html" data-i18n="nav.account">B 站账号</a>
+  <a href="/console/favorites.html" data-i18n="nav.favorites" data-nav-role="bili">收藏夹</a>
+  <a href="/console/history.html" data-i18n="nav.history" data-nav-role="bili">历史记录</a>
+</nav>
+<main class="wrap">
+  <div class="row">
+    <input id="input" placeholder="输入 av 号 / BV 号 / 视频 URL，按 Enter 解析">
+    <button id="parse">解析</button>
+  </div>
+  <div class="err" id="err"></div>
+  <details id="history-box" style="margin-top:10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-md);padding:6px 12px;" open>
+    <summary style="cursor:pointer;font-size:13px;color:var(--text-muted);user-select:none;" data-i18n="parse.history">最近解析</summary>
+    <div id="history-list" style="margin-top:8px;display:flex;flex-direction:column;gap:4px;font-size:12.5px;max-height:240px;overflow-y:auto;"></div>
+  </details>
+  <div id="result"></div>
+</main>
+<div class="toast" id="toast"></div>
+<script type="module" src="/console/js/parse.js"></script>
+</body>
+</html>
