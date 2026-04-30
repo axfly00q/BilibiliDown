@@ -1,4 +1,15 @@
 ## UPDATE
+* V6.50 `2026-04-30`
+    * 新增：Web 控制台仪表盘 `dashboard.html`，集中显示运行状态、任务统计与错误概况
+    * 新增：直播录制解析器 `URL4LiveRoomParser` / `URL4LiveRecordParser`，支持下载直播流与回放
+    * 新增：弹幕烧录接口 `ControllerDanmuBurn`，可将弹幕直接烧录进视频
+    * 新增：任务持久化 `TaskPersistence` + 错误详情 `TaskErrorStore`，重启后自动恢复未完成任务
+    * 新增：Web 控制台多语言、主题、解析与下载页大幅扩充（每行操作、批量下载、SSE 进度优化）
+    * 新增：Windows 一键打包脚本 `package-win-installer.bat`，使用 `jpackage` 产出 `dist\BilibiliDown\BilibiliDown.exe` 与 `BilibiliDown-6.50-win-x64.zip`，解压双击即用，自动弹出浏览器到 Web 控制台
+    * 优化：图文/CV 解析 (`URL4PictureCVParser`) 大幅增强，新增多形态正文与图集兼容
+    * 优化：`ResourcesUtil.baseDirectory` 改为基于 CodeSource 推断工程根，避免不同 cwd 下历史"看似消失"
+    * 优化：下载线程、批量任务、命令行参数、`JOptionPaneManager` 等多处稳定性提升
+    * 修复：弹幕下载、设置控制器、解析控制器若干异常路径
 * V6.41 `2026-04-24`
     * 优化：添加对url类型https://space.bilibili.com/[0-9]+/lists?sid=[0-9]+`的支持 #289
     * 修复：修复是否点赞的判断失效问题 #287

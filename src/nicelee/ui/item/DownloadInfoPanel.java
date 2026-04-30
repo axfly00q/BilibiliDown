@@ -43,6 +43,8 @@ public class DownloadInfoPanel extends JPanel implements ActionListener {
 	public String formattedTitle;
 	public boolean stopOnQueue = false;
 	int failCnt = 0;
+	/** 用户设定的下载优先级（数值越大越优先），默认 0 */
+	public volatile int priority = 0;
 
 	public int getFailCnt() {
 		return failCnt;

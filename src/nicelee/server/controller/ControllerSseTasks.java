@@ -47,6 +47,8 @@ public class ControllerSseTasks {
 						.append("\"fileName\":\"").append(esc(t.fileName)).append("\",")
 						.append("\"absPath\":\"").append(esc(t.absPath)).append("\",")
 						.append("\"relPath\":\"").append(esc(t.relPath)).append("\",")
+						.append("\"avId\":\"").append(esc(t.avId)).append("\",")
+						.append("\"lastError\":\"").append(esc(t.lastError)).append("\",")
 						.append("\"title\":\"").append(esc(t.title)).append("\"")
 						.append('}');
 				}

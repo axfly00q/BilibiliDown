@@ -1,7 +1,7 @@
 // Web 控制台主页：主题切换 + 鉴权检查
 import { api } from '/console/js/api.js';
 import { applyI18n, injectLangSwitch, applyRoleNav } from '/console/js/i18n.js';
-import { autoCheckUpdate } from '/console/js/update.js';
+import { autoCheckUpdate, manualCheckUpdate } from '/console/js/update.js';
 
 // 主题
 const KEY = 'bd-theme';
@@ -28,6 +28,10 @@ document.querySelectorAll('.theme-switch__btn').forEach(b => {
 applyI18n();
 injectLangSwitch('.topbar');
 applyRoleNav();
+
+// 顶栏"检查更新"按钮
+const _cuBtn = document.getElementById('check-update');
+if (_cuBtn) _cuBtn.addEventListener('click', () => manualCheckUpdate());
 
 // 进入控制台首页时自动检查更新（30 分钟缓存，无更新或被跳过则静默）
 autoCheckUpdate();

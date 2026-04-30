@@ -38,6 +38,7 @@
   <a href="/console/index.html" data-i18n="nav.home">首页</a>
   <a href="/console/parse.html" data-i18n="nav.parse">解析</a>
   <a href="/console/downloads.html" class="active" data-i18n="nav.downloads">下载任务</a>
+  <a href="/console/dashboard.html" data-i18n="nav.dashboard">仪表盘</a>
   <a href="/console/logs.html" data-i18n="nav.logs">日志</a>
   <a href="/console/settings.html" data-i18n="nav.settings">设置</a>
   <a href="/console/account.html" data-i18n="nav.account">B 站账号</a>
@@ -56,6 +57,37 @@
     <span style="flex:1"></span>
     <span id="status" style="color:var(--text-muted);font-size:12.5px;align-self:center"></span>
   </div>
+  <div class="toolbar" style="gap:6px;">
+    <input id="filter-text" type="text" placeholder="搜索 标题 / avId / 路径" data-i18n-attr="placeholder:downloads.searchPh"
+           style="flex:1;min-width:180px;padding:6px 10px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;font-size:13px;">
+    <select id="filter-status" style="padding:6px 10px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;font-size:13px;">
+      <option value="">全部状态</option>
+      <option value="active">下载中</option>
+      <option value="paused">已暂停</option>
+      <option value="queued">等待中</option>
+      <option value="processing">处理中</option>
+      <option value="done">已完成</option>
+      <option value="fail">失败</option>
+    </select>
+    <select id="sort-by" style="padding:6px 10px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;font-size:13px;">
+      <option value="default">默认顺序</option>
+      <option value="title">按标题</option>
+      <option value="progress">按进度</option>
+      <option value="size">按大小</option>
+      <option value="speed">按速度</option>
+      <option value="status">按状态</option>
+    </select>
+    <select id="sort-dir" style="padding:6px 10px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;font-size:13px;">
+      <option value="asc">升序</option>
+      <option value="desc" selected>降序</option>
+    </select>
+    <select id="page-size" style="padding:6px 10px;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:6px;font-size:13px;">
+      <option value="20">20/页</option>
+      <option value="50" selected>50/页</option>
+      <option value="100">100/页</option>
+      <option value="0">全部</option>
+    </select>
+  </div>
   <table>
     <thead><tr>
       <th style="width:30%">名称</th>
@@ -69,6 +101,7 @@
       <tr><td colspan="6" class="empty" id="empty">暂无任务</td></tr>
     </tbody>
   </table>
+  <div id="pager" style="display:flex;gap:6px;justify-content:center;align-items:center;margin-top:12px;font-size:13px;color:var(--text-muted);"></div>
 </main>
 <script type="module" src="/console/js/downloads.js"></script>
 </body>

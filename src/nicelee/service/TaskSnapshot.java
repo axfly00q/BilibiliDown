@@ -17,4 +17,6 @@ public class TaskSnapshot {
 	public long currentDown;
 	public long totalSize;
 	public long speed;         // bytes/s
+	public String lastError;   // 最近一次失败原因（仅 status==fail 时有意义）
+	public int priority;       // 用户设定的优先级（数值越大越优先）
 }

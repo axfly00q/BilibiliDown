@@ -13,6 +13,10 @@ public class DownloadExecutors {
 		comp = new Comparator<DownloadRunnableInternal>() {
 			@Override
 			public int compare(DownloadRunnableInternal o1, DownloadRunnableInternal o2) {
+				// 用户优先级（数值越大越优先）
+				int p1 = o1.downPanel != null ? o1.downPanel.priority : 0;
+				int p2 = o2.downPanel != null ? o2.downPanel.priority : 0;
+				if (p1 != p2) return p2 - p1;
 				// o1.invokeByContinueTask 为true时优先级更高
 				// o1.failCnt 越大优先级更高（为0时特殊考虑）
 				// o1.urlTimestamp 越小优先级更高

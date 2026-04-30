@@ -3,7 +3,7 @@ import { applyI18n, injectLangSwitch, injectThemeSwitch, t, applyRoleNav } from 
 
 const $ = (id) => document.getElementById(id);
 function escape(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function toast(msg){ const e=$('toast'); e.textContent=msg; e.classList.add('show'); setTimeout(()=>e.classList.remove('show'), 2000); }
+function toast(msg){ const e=$('toast'); e.textContent=msg; e.classList.add('show'); setTimeout(()=>e.classList.remove('show'), 4000); }
 
 let pollTimer = null;
 let curKey = null;

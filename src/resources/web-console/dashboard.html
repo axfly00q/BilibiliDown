@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>仪表盘 · BilibiliDown</title>
+<link href="/console/css/style.css" rel="stylesheet">
+<style>
+  .topnav { display:flex; gap:12px; padding:10px 18px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .topnav a { text-decoration:none; color:var(--text-muted); font-size:13.5px; }
+  .topnav a.active { color:var(--brand); font-weight:600; }
+  .wrap { max-width: 1400px; margin: 18px auto; padding: 0 14px; }
+  .stat-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:18px; }
+  .card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-md,8px); padding:14px 16px;
+  }
+  .card .label { color:var(--text-muted); font-size:12px; margin-bottom:6px; }
+  .card .num { font-size:22px; font-weight:600; color:var(--text); }
+  .card .sub { color:var(--text-muted); font-size:11.5px; margin-top:4px; }
+  .panel {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:var(--radius-md,8px); padding:14px 18px; margin-bottom:14px;
+  }
+  .panel h3 { margin:0 0 12px 0; font-size:14px; color:var(--text); }
+  .chart { width:100%; }
+  .chart .bar { fill:var(--brand); transition:opacity .15s; }
+  .chart .bar:hover { opacity:.7; }
+  .chart .axis { stroke:var(--border); stroke-width:1; }
+  .chart .label { fill:var(--text-muted); font-size:10px; }
+  .top-table { width:100%; border-collapse:collapse; font-size:13px; }
+  .top-table th, .top-table td { padding:8px 10px; border-bottom:1px solid var(--border); text-align:left; }
+  .top-table th { color:var(--text-muted); font-weight:500; font-size:12px; }
+  .top-table .num { text-align:right; font-variant-numeric:tabular-nums; }
+  .empty { text-align:center; padding:30px; color:var(--text-muted); font-size:13px; }
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="/console/index.html" data-i18n="nav.home">首页</a>
+  <a href="/console/parse.html" data-i18n="nav.parse">解析</a>
+  <a href="/console/downloads.html" data-i18n="nav.downloads">下载任务</a>
+  <a href="/console/dashboard.html" class="active" data-i18n="nav.dashboard">仪表盘</a>
+  <a href="/console/logs.html" data-i18n="nav.logs">日志</a>
+  <a href="/console/settings.html" data-i18n="nav.settings">设置</a>
+  <a href="/console/account.html" data-i18n="nav.account">B 站账号</a>
+  <a href="/console/favorites.html" data-i18n="nav.favorites" data-nav-role="bili">收藏夹</a>
+  <a href="/console/history.html" data-i18n="nav.history" data-nav-role="bili">历史记录</a>
+</nav>
+<main class="wrap">
+  <div class="stat-grid" id="cards"></div>
+  <div class="panel">
+    <h3 data-i18n="dash.days14">最近 14 天下载量</h3>
+    <div id="chart-cnt"></div>
+  </div>
+  <div class="panel">
+    <h3 data-i18n="dash.days14bytes">最近 14 天下载流量</h3>
+    <div id="chart-bytes"></div>
+  </div>
+  <div class="panel">
+    <h3 data-i18n="dash.topAv">下载次数 Top 10</h3>
+    <div id="top-list"><div class="empty" data-i18n="dash.loading">加载中…</div></div>
+  </div>
+</main>
+<script type="module" src="/console/js/dashboard.js"></script>
+</body>
+</html>

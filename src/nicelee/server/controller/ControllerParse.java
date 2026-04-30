@@ -29,6 +29,10 @@ public class ControllerParse {
 				return null;
 			}
 			VideoInfo info = ParseService.getDetail(avId);
+			if (info == null || info.getVideoId() == null) {
+				ResponseUtil.writeJsonStatus(out, 500, JsonUtil.err(500, "解析失败：未获取到视频信息（可能未登录、未开播或不支持的链接）"));
+				return null;
+			}
 			StringBuilder sb = new StringBuilder();
 			sb.append('{')
 				.append(JsonUtil.kv("avId", info.getVideoId())).append(',')
@@ -51,7 +55,14 @@ public class ControllerParse {
 						.append('}');
 				}
 			}
-			sb.append("]}");
+			sb.append("]");
+			// 专栏 HTML 导出提示（一次性，读后置空）
+			String exported = nicelee.ui.Global.lastCvExportFile;
+			if (exported != null && !exported.isEmpty()) {
+				nicelee.ui.Global.lastCvExportFile = null;
+				sb.append(',').append(JsonUtil.kv("cvExportFile", exported));
+			}
+			sb.append("}");
 			ResponseUtil.writeJson(out, JsonUtil.okData(sb.toString()));
 			// 写入解析历史（仅 非游客）
 			try {

@@ -26,7 +26,7 @@ import nicelee.ui.thread.DownloadExecutors;
 
 public class Global {
 	// 界面显示相关
-	@Config(key = "bilibili.version", defaultValue = "v6.41", warning = false)
+	@Config(key = "bilibili.version", defaultValue = "v6.50", warning = false)
 	public static String version; // 一般情况下，我们不会设置这个标签，这个用于测试
 	@Config(key = "bilibili.time.syncServer", note = "同步服务器的时间", defaultValue = "false", valids = { "true", "false" })
 	public static boolean syncServerTime;
@@ -288,6 +288,12 @@ public class Global {
 	// 字幕弹幕相关
 	@Config(key = "bilibili.cc.lang", note = "CC字幕优先语种", defaultValue = "zh-CN")
 	public static String cc_lang; // 字幕优先语种,如zh-CN等, 详见 release/wiki/langs.txt
+	@Config(key = "bilibili.danmu.keepXml", note = "下载弹幕时除 ASS 外是否保留 XML 原文件", defaultValue = "false", valids = { "true", "false" })
+	public static boolean danmuKeepXml;
+	@Config(key = "bilibili.cv.exportHtml", note = "解析专栏时同时导出 HTML 文章到下载目录", defaultValue = "false", valids = { "true", "false" })
+	public static boolean cvExportHtml;
+	/** 最近一次 cv 专栏 HTML 导出的文件绝对路径（仅用于前端提示） */
+	public static volatile String lastCvExportFile = null;
 	// 代理
 //	@Config(key = "http.proxyHost", note = "HTTP代理Host", defaultValue = "")
 //	private static String httpProxyHost;

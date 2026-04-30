@@ -220,10 +220,46 @@ public class ResourcesUtil {
 					cacheBaseDir = getProjectPath();
 				}
 			} else {
-				cacheBaseDir = System.getProperty("user.dir", "");
+				// 优先使用代码所在路径（class 目录的父目录），而非 user.dir
+				// 否则同一份程序从不同 cwd 启动时，config/ 会指向不同位置，
+				// 导致下载历史 / 解析历史 / 配置看起来"重启后消失"
+				String codeBased = tryGetCodeBaseDirectory();
+				if (codeBased != null && !codeBased.isEmpty()) {
+					cacheBaseDir = codeBased;
+				} else {
+					cacheBaseDir = System.getProperty("user.dir", "");
+				}
 			}
 		}
 		return cacheBaseDir;
+	}
+
+	/**
+	 * 在非 jar 启动场景下推断"工程根目录"。
+	 * ConfigUtil.class 的 CodeSource 通常形如 .../build/ 或 .../bin/ 或 .../classes/ 等
+	 * class 输出目录，去掉一层即得到工程根。
+	 * 任何异常返回 null，调用方回退到 user.dir。
+	 */
+	private static String tryGetCodeBaseDirectory() {
+		try {
+			java.net.URL url = ConfigUtil.class.getProtectionDomain().getCodeSource().getLocation();
+			if (url == null) return null;
+			String filePath = java.net.URLDecoder.decode(url.getPath(), "UTF-8");
+			File f = new File(filePath);
+			if (!f.exists()) return null;
+			if (f.isFile()) f = f.getParentFile(); // 理论上 isJarLaunch 已处理
+			if (f == null || !f.isDirectory()) return null;
+			String name = f.getName();
+			if (name.equalsIgnoreCase("build") || name.equalsIgnoreCase("bin")
+					|| name.equalsIgnoreCase("classes") || name.equalsIgnoreCase("out")
+					|| name.equalsIgnoreCase("target")) {
+				File parent = f.getParentFile();
+				if (parent != null && parent.isDirectory()) return parent.getAbsolutePath();
+			}
+			return f.getAbsolutePath();
+		} catch (Exception ignored) {
+			return null;
+		}
 	}
 
 	public static String canonicalPath(String path) {

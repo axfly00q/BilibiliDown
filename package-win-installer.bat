@@ -11,7 +11,7 @@ cd /d %~dp0
 setlocal enabledelayedexpansion
 
 set APP_NAME=BilibiliDown
-set APP_VERSION=6.41
+set APP_VERSION=6.50
 set APP_VENDOR=nicelee
 set DIST_INPUT=%~dp0dist-input
 set DIST_OUT=%~dp0dist
@@ -50,7 +50,7 @@ if exist release\ffmpeg.exe copy /y release\ffmpeg.exe "%DIST_INPUT%\" >nul
 if not exist "%DIST_INPUT%\config" mkdir "%DIST_INPUT%\config"
 if exist release\config\app.config copy /y release\config\app.config "%DIST_INPUT%\config\" >nul
 
-echo [6/6] 生成 app-image ...
+echo [6/7] 生成 app-image ...
 jpackage ^
   --type app-image ^
   --name "%APP_NAME%" ^
@@ -68,11 +68,22 @@ jpackage ^
 
 if errorlevel 1 ( echo jpackage 失败 & exit /b 1 )
 
+echo [7/7] 压缩为可分发 zip ...
+set ZIP_FILE=%DIST_OUT%\%APP_NAME%-%APP_VERSION%-win-x64.zip
+if exist "%ZIP_FILE%" del /q "%ZIP_FILE%"
+powershell -NoProfile -Command "Compress-Archive -Path '%DIST_OUT%\%APP_NAME%' -DestinationPath '%ZIP_FILE%' -CompressionLevel Optimal -Force"
+if errorlevel 1 ( echo 压缩 zip 失败 & exit /b 1 )
+
 echo.
 echo ============================================================
-echo  完成！应用目录: %DIST_OUT%\%APP_NAME%
-echo  双击 %DIST_OUT%\%APP_NAME%\%APP_NAME%.exe 启动
-echo  - 不会弹出 Swing 桌面窗口
-echo  - 服务就绪后自动在浏览器打开 http://127.0.0.1:8787/console/index.html
+echo  完成！
+echo    应用目录   = %DIST_OUT%\%APP_NAME%
+echo    分发 zip   = %ZIP_FILE%
+echo.
+echo  使用方法（最终用户）
+echo    1) 解压 zip 到任意目录
+echo    2) 双击 %APP_NAME%\%APP_NAME%.exe
+echo    3) 浏览器自动弹出 http://127.0.0.1:8787/console/index.html
+echo       (首次启动约 12 秒，不会出现 Swing 桌面窗口)
 echo ============================================================
 endlocal

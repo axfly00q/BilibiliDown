@@ -50,6 +50,10 @@ public class ControllerSettings {
 					"程序请求 B 站 API 时使用的 UA，默认是 Firefox。除非遇到反爬错误，一般不要改动。" },
 			{ "bilibili.frontend.lang", "select", "auto,zh-CN,en-US,ja-JP", "前端页面语言",
 					"auto：跟随浏览器；zh-CN/en-US/ja-JP：强制指定语言。修改后下次刷新页面生效。" },
+			{ "bilibili.danmu.keepXml", "bool", "true,false", "下载弹幕时保留 XML 原文件",
+					"true：除转换出 ASS 字幕外，同时保留 B 站原始 XML 弹幕文件；false：仅保留 ASS。" },
+			{ "bilibili.cv.exportHtml", "bool", "true,false", "解析专栏时同时导出 HTML 文章",
+					"true：解析 cv 专栏时，把标题/正文段落/图片导出为 {savePath}/{author}/cv{id}.html，便于离线阅读（图片仍是远程外链）；false：不导出。" },
 	};
 
 	@Controller(path = "/list", matchAll = true, note = "GET 读取当前设置")
@@ -96,6 +100,8 @@ public class ControllerSettings {
 				case "bilibili.web.auth.password": v = Global.webAuthPassword; break;
 				case "bilibili.userAgent.pc": v = Global.userAgent; break;
 				case "bilibili.frontend.lang": v = Global.frontendLang; break;
+				case "bilibili.danmu.keepXml": v = Global.danmuKeepXml; break;
+				case "bilibili.cv.exportHtml": v = Global.cvExportHtml; break;
 				default: return null;
 			}
 			return v == null ? "" : String.valueOf(v);
@@ -214,6 +220,12 @@ public class ControllerSettings {
 				break;
 			case "bilibili.frontend.lang":
 				Global.frontendLang = val;
+				break;
+			case "bilibili.danmu.keepXml":
+				Global.danmuKeepXml = "true".equalsIgnoreCase(val);
+				break;
+			case "bilibili.cv.exportHtml":
+				Global.cvExportHtml = "true".equalsIgnoreCase(val);
 				break;
 			default:
 				// poolSize 等需要重启，不在此处理

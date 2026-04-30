@@ -23,6 +23,7 @@ public class URL4PictureOpusParser extends URL4PictureCVParser {
 
 	private final static Pattern opPattern = Pattern.compile("\\.bilibili\\.com/opus/([0-9]+)");
 	private final static Pattern tPattern = Pattern.compile("t\\.bilibili\\.com/([0-9]+)");
+	private final static Pattern bareOpusPattern = Pattern.compile("^opus([0-9]+)$");
 	private String opusIdNumber;
 
 	public URL4PictureOpusParser(Object... obj) {
@@ -41,6 +42,12 @@ public class URL4PictureOpusParser extends URL4PictureCVParser {
 		if (matcher.find()) {
 			opusIdNumber = matcher.group(1);
 			Logger.println("匹配URL4PictureOpusParser: opus" + opusIdNumber);
+			return true;
+		}
+		matcher = bareOpusPattern.matcher(input);
+		if (matcher.find()) {
+			opusIdNumber = matcher.group(1);
+			Logger.println("匹配URL4PictureOpusParser(裸 ID): opus" + opusIdNumber);
 			return true;
 		}
 		return false;
@@ -79,6 +86,12 @@ public class URL4PictureOpusParser extends URL4PictureCVParser {
 		if (type == 12) {
 			cvIdNumber = jBasic.optString("comment_id_str");
 			return getCVDetail(cvIdNumber);
+		}
+		// 视频动态 / 转发的视频动态：尝试提取 bvid 后路由到普通视频解析
+		String bvid = extractBvid(jObj, jBasic);
+		if (bvid != null && !bvid.isEmpty()) {
+			Logger.println("URL4PictureOpusParser: 检测到视频动态，跳转 BV " + bvid);
+			return getAVDetail(bvid, 64, true);
 		}
 		VideoInfo viInfo = new VideoInfo();
 		JSONArray jParagraphs = null, jTopPics = null, jModules = jObj.getJSONArray("modules");
@@ -232,4 +245,25 @@ public class URL4PictureOpusParser extends URL4PictureCVParser {
 //		return viInfo;
 //	}
 
+	/**
+	 * 从动态 detail JSON 中尝试提取视频 BV 号（含转发动态的原始视频）。
+	 * 找到返回 BV...，否则 null。
+	 */
+	private String extractBvid(JSONObject detail, JSONObject basic) {
+		// 在 modules / module_dynamic.major.archive.bvid 里递归搜（最稳）
+		try {
+			String dump = detail.toString();
+			int i = dump.indexOf("\"bvid\"");
+			while (i >= 0) {
+				int q1 = dump.indexOf('"', i + 6);
+				if (q1 < 0) break;
+				int q2 = dump.indexOf('"', q1 + 1);
+				if (q2 < 0) break;
+				String bv = dump.substring(q1 + 1, q2);
+				if (bv.startsWith("BV") && bv.length() > 4) return bv;
+				i = dump.indexOf("\"bvid\"", q2);
+			}
+		} catch (Exception ignored) {}
+		return null;
+	}
 }

@@ -140,6 +140,13 @@ public class BatchDownloadRbyRThread extends BatchDownloadThread {
 	}
 
 	public static void taskFail(ClipInfo clip, String status) {
+		// 记录失败原因到全局映射，供 Web API 弹窗显示
+		try {
+			if (clip != null) {
+				String key = clip.getAvId() + "-p" + clip.getPage();
+				nicelee.service.TaskErrorStore.put(key, status);
+			}
+		} catch (Throwable ignored) {}
 		if (currentTaskList != null) {
 			TaskInfo task = currentTaskList.get(clip);
 			if (task != null) {

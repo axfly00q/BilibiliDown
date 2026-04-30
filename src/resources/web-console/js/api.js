@@ -25,6 +25,7 @@ async function request(method, url, body) {
 export const api = {
   parse: (input) => request('GET', '/api/parse?input=' + encodeURIComponent(input)),
   qualityList: () => request('GET', '/api/quality/list'),
+  qualityAvail: (avId, cid) => request('GET', '/api/quality/avail?avId=' + encodeURIComponent(avId) + '&cid=' + encodeURIComponent(cid)),
   taskList: () => request('GET', '/api/download/list'),
   submit: (avId, cid, qn) => request('POST', '/api/download/submit', { avId, cid: String(cid), qn: String(qn) }),
   pause: (id) => request('POST', '/api/download/' + encodeURIComponent(id) + '/pause'),
@@ -33,6 +34,8 @@ export const api = {
   pauseAll: () => request('POST', '/api/download/all/pause'),
   resumeAll: () => request('POST', '/api/download/all/resume'),
   removeDone: () => request('POST', '/api/download/all/done'),
+  setPriority: (id, priority) => request('POST', '/api/download/' + encodeURIComponent(id) + '/priority', { priority: Number(priority) }),
+  movePriority: (id, direction) => request('POST', '/api/download/' + encodeURIComponent(id) + '/move', { direction }),
   saveCover: (avId, cid) => request('GET', '/api/cover/save?avId=' + encodeURIComponent(avId) + (cid ? '&cid=' + encodeURIComponent(cid) : '')),
   settingsList: () => request('GET', '/api/settings/list'),
   settingsSave: (kv) => request('POST', '/api/settings/save', kv),
@@ -65,6 +68,7 @@ export const api = {
     return request('GET', '/api/logs' + (s ? ('?' + s) : ''));
   },
   logsSeq: () => request('GET', '/api/logs/seq'),
+  statsSummary: () => request('GET', '/api/stats/summary'),
 };
 
 export function fmtBytes(b) {

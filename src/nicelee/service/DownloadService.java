@@ -114,6 +114,11 @@ public class DownloadService {
 			case SUCCESS: s.status = "done"; break;
 			default: s.status = "queued";
 		}
+		// 失败原因
+		if ("fail".equals(s.status)) {
+			s.lastError = TaskErrorStore.get(p.getAvid() + "-p" + p.getClipInfo().getPage());
+		}
+		s.priority = p.priority;
 		return s;
 	}
 
@@ -143,7 +148,38 @@ public class DownloadService {
 		DownloadInfoPanel p = find(id);
 		if (p == null) return false;
 		try { p.removeTask(true); } catch (Exception ignored) {}
+		try { TaskPersistence.scheduleSave(); } catch (Throwable ignored) {}
 		return true;
+	}
+
+	public static boolean setPriority(String id, int priority) {
+		DownloadInfoPanel p = find(id);
+		if (p == null) return false;
+		p.priority = priority;
+		return true;
+	}
+
+	/**
+	 * 把任务在队列中的相对位置移动。direction = up / down / top / bottom。
+	 * 实现：调整 priority 数值（top=最大+1, bottom=最小-1, up=邻居+1, down=邻居-1）。
+	 * 由于底层是 ConcurrentHashMap，并不能保证显示顺序与 priority 完全一致，
+	 * 但调度优先级会立即生效。
+	 */
+	public static boolean move(String id, String direction) {
+		DownloadInfoPanel target = find(id);
+		if (target == null || direction == null) return false;
+		int max = Integer.MIN_VALUE, min = Integer.MAX_VALUE;
+		for (DownloadInfoPanel p : Global.downloadTaskList.keySet()) {
+			if (p.priority > max) max = p.priority;
+			if (p.priority < min) min = p.priority;
+		}
+		switch (direction) {
+			case "top":    target.priority = (max == Integer.MIN_VALUE ? 1 : max + 1); return true;
+			case "bottom": target.priority = (min == Integer.MAX_VALUE ? -1 : min - 1); return true;
+			case "up":     target.priority = target.priority + 1; return true;
+			case "down":   target.priority = target.priority - 1; return true;
+			default: return false;
+		}
 	}
 
 	public static int pauseAll() {
@@ -187,8 +223,10 @@ public class DownloadService {
 			public void run() {
 				DownloadRunnable.SKIP_REPO_CHECK.set(Boolean.TRUE);
 				try { super.run(); } finally { DownloadRunnable.SKIP_REPO_CHECK.remove(); }
+				try { TaskPersistence.scheduleSave(); } catch (Throwable ignored) {}
 			}
 		};
 		Global.queryThreadPool.execute(downThread);
+		try { TaskPersistence.scheduleSave(); } catch (Throwable ignored) {}
 	}
 }

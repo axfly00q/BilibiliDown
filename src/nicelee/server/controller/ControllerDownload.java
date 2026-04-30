@@ -21,6 +21,8 @@ public class ControllerDownload {
 
 	private static final Pattern ID_PAT = Pattern.compile("^/api/download/([^/]+)/(pause|resume|remove)$");
 	private static final Pattern ALL_PAT = Pattern.compile("^/api/download/all/(pause|resume|done)$");
+	private static final Pattern PRIO_PAT = Pattern.compile("^/api/download/([^/]+)/priority$");
+	private static final Pattern MOVE_PAT = Pattern.compile("^/api/download/([^/]+)/move$");
 
 	/**
 	 * 单一入口，避免 PathDealer 的 getMethods() 顺序不确定 + 前缀匹配吞掉子路径的问题。
@@ -34,6 +36,10 @@ public class ControllerDownload {
 		if ("/api/download/submit".equals(path)) return submit(out, body);
 		Matcher m2 = ALL_PAT.matcher(path);
 		if (m2.matches()) return opAll(out, m2.group(1));
+		Matcher mp = PRIO_PAT.matcher(path);
+		if (mp.matches()) return opPriority(out, mp.group(1), body);
+		Matcher mv = MOVE_PAT.matcher(path);
+		if (mv.matches()) return opMove(out, mv.group(1), body);
 		Matcher m = ID_PAT.matcher(path);
 		if (m.matches()) return opSingle(out, m.group(1), m.group(2));
 		ResponseUtil.writeJsonStatus(out, 404, JsonUtil.err(404, "unknown path: " + path));
@@ -99,6 +105,35 @@ public class ControllerDownload {
 		return null;
 	}
 
+	private String opPriority(BufferedWriter out, String id, String body) throws IOException {
+		String pStr = jsonStr(body, "priority");
+		if (pStr == null) {
+			ResponseUtil.writeJsonStatus(out, 400, JsonUtil.err(400, "missing priority"));
+			return null;
+		}
+		try {
+			int prio = Integer.parseInt(pStr.trim());
+			boolean ok = DownloadService.setPriority(id, prio);
+			if (!ok) ResponseUtil.writeJsonStatus(out, 404, JsonUtil.err(404, "task not found"));
+			else ResponseUtil.writeJson(out, JsonUtil.ok());
+		} catch (NumberFormatException e) {
+			ResponseUtil.writeJsonStatus(out, 400, JsonUtil.err(400, "priority must be int"));
+		}
+		return null;
+	}
+
+	private String opMove(BufferedWriter out, String id, String body) throws IOException {
+		String dir = jsonStr(body, "direction");
+		if (dir == null) {
+			ResponseUtil.writeJsonStatus(out, 400, JsonUtil.err(400, "missing direction"));
+			return null;
+		}
+		boolean ok = DownloadService.move(id, dir);
+		if (!ok) ResponseUtil.writeJsonStatus(out, 404, JsonUtil.err(404, "task not found or invalid direction"));
+		else ResponseUtil.writeJson(out, JsonUtil.ok());
+		return null;
+	}
+
 	private static String snapshotJson(List<TaskSnapshot> tasks) {
 		StringBuilder sb = new StringBuilder();
 		sb.append('[');
@@ -119,7 +154,9 @@ public class ControllerDownload {
 				.append(JsonUtil.kv("status", n(t.status))).append(',')
 				.append(JsonUtil.kvN("currentDown", t.currentDown)).append(',')
 				.append(JsonUtil.kvN("totalSize", t.totalSize)).append(',')
-				.append(JsonUtil.kvN("speed", t.speed))
+				.append(JsonUtil.kvN("speed", t.speed)).append(',')
+				.append(JsonUtil.kv("lastError", n(t.lastError))).append(',')
+				.append(JsonUtil.kvN("priority", t.priority))
 				.append('}');
 		}
 		sb.append(']');

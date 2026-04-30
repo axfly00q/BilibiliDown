@@ -126,6 +126,8 @@ public class FrameMain extends JFrame {
 		PackageScanLoader.validParserClasses.isEmpty();
 		// 自动启动 Web 控制台 HTTP 服务（鉴权见 app.config: bilibili.web.auth.*）
 		try { Global.ensureWebServerStarted(); } catch (Throwable t) { t.printStackTrace(); }
+		// 恢复上次未完成的任务
+		try { nicelee.service.TaskPersistence.restore(); } catch (Throwable t) { t.printStackTrace(); }
 		if(Global.batchDownloadRbyRRunOnStartup) {
 			// 开始按计划周期性批量下载
 			new Thread(new Runnable() {

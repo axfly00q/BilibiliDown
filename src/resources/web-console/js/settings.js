@@ -3,7 +3,7 @@ import { applyI18n, injectLangSwitch, injectThemeSwitch, applyRoleNav } from '/c
 import { manualCheckUpdate } from '/console/js/update.js';
 const $ = (id) => document.getElementById(id);
 function escape(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 4000); }
 
 let original = {};
 

@@ -13,6 +13,29 @@ Bilibili 视频下载器，用于下载B站视频。
 如有需要请直接删除，或`操作->登录相关->退出登录`  
 更多详情请参考[帮助文档](https://nICEnnnnnnnLee.github.io/BilibiliDown) (如果访问不太顺畅的话，可以试试[备用帮助文档](https://bili.nicelee.top/BilibiliDown))  
 
+## :rocket: Web 控制台 + Windows 一键安装包 (v6.50)
+本分支在原项目基础上新增了完整的 **Web 控制台**（解析 / 下载 / 收藏 / 历史 / 仪表盘 / 设置 / B 站账号 / 日志 / 多语言 / 暗色主题 / 移动端响应式）和 **Windows 免安装绿色版打包脚本**。
+
+### 直接下载使用（最终用户）
+1. 解压 `BilibiliDown-6.50-win-x64.zip` 到任意目录
+2. 双击 `BilibiliDown\BilibiliDown.exe`
+3. 约 12 秒后浏览器会自动弹出 <http://127.0.0.1:8787/console/index.html>
+4. 默认用户名 `admin`，初始密码会写入 `app.out.log` 或终端首行；可在 `config/app.config` 中设置 `bilibili.web.auth.password=你的密码`
+
+> 不会弹出 Swing 桌面窗口；自带 JRE，目标机器无需安装 Java。
+
+### 自行打包
+```powershell
+# 需要 JDK 17+（含 jpackage）
+cd BilibiliDown-master
+.\package-win-installer.bat
+# 产物：
+#   dist\BilibiliDown\BilibiliDown.exe
+#   dist\BilibiliDown-6.50-win-x64.zip
+```
+
+详细使用与功能验证清单见 [WEB-CONSOLE-USER-GUIDE.md](WEB-CONSOLE-USER-GUIDE.md)。
+
 ## :smile:第三方库使用声明  
 * AV和BV转换参考了[Colerar/abv](https://github.com/Colerar/abv)[![](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/Colerar/abv/blob/master/LICENSE-MIT)  
 * 使用[JSON.org](https://github.com/stleary/JSON-java)库做简单的Json解析[![](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com/stleary/JSON-java/blob/master/LICENSE)

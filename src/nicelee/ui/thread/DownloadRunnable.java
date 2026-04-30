@@ -32,9 +32,11 @@ public class DownloadRunnable implements Runnable {
 	String record;
 	int qn; //想要申请的链接视频质量
 
-	final static String MSG_VIDEO_DOWNLOADED = "您已经下载过视频 %s\n如果想继续下载:\n"
-			+ "临时方案: 右上角[配置] -> [下载前先查询记录?] -> [不查询]\n"
-			+ "持久化方案: 在配置页搜索并修改配置 bilibili.repo";
+	final static String MSG_VIDEO_DOWNLOADED = "您已经下载过视频 %s\n是否继续重复下载？\n\n"
+			+ "[继续下载（重复下载）]：忽略已下载记录，立即重新下载该视频\n"
+			+ "[不下载]：本次跳过\n"
+			+ "[全部取消]：关闭其它同类弹窗\n\n"
+			+ "（也可在配置中关闭：bilibili.alert.isAlertIfDownloded）";
 //	public DownloadRunnable(ClipInfo clip, int qn) {
 //		this.displayName = clip.getAvTitle() + "p" + clip.getRemark() + "-" +clip.getTitle();
 //		this.clip = clip;
@@ -80,10 +82,12 @@ public class DownloadRunnable implements Runnable {
 		}
 		//判断是否已经下载过
 		if(Global.useRepo && !Boolean.TRUE.equals(SKIP_REPO_CHECK.get()) && RepoUtil.isInRepo(record)) {
-			JOptionPaneManager.showMsgWithNewThread("提示", String.format(MSG_VIDEO_DOWNLOADED, record));
-			System.out.println("已经下载过 " + record);
-			BatchDownloadRbyRThread.taskFail(clip, "already downloaded");
-			return;
+			boolean proceed = askContinueIfDownloaded(record);
+			if (!proceed) {
+				System.out.println("已经下载过 " + record);
+				BatchDownloadRbyRThread.taskFail(clip, "already downloaded");
+				return;
+			}
 		}
 		// 新建下载部件
 		DownloadInfoPanel downPanel = new DownloadInfoPanel(clip, qn);
@@ -111,10 +115,12 @@ public class DownloadRunnable implements Runnable {
 		//如果清晰度不符合预期，再判断一次记录
 		//判断是否已经下载过
 		if (qn != realQN && Global.useRepo && !Boolean.TRUE.equals(SKIP_REPO_CHECK.get()) && RepoUtil.isInRepo(record)) {
-			JOptionPaneManager.showMsgWithNewThread("提示", String.format(MSG_VIDEO_DOWNLOADED, record));
-			System.out.println("已经下载过 " + record);
-			BatchDownloadRbyRThread.taskFail(clip, "already downloaded2");
-			return;
+			boolean proceed = askContinueIfDownloaded(record);
+			if (!proceed) {
+				System.out.println("已经下载过 " + record);
+				BatchDownloadRbyRThread.taskFail(clip, "already downloaded2");
+				return;
+			}
 		}
 		//获取实际清晰度后，初始化下载部件参数
 		downPanel.initDownloadParams(iNeedAV, urlQuery, avid_qn, formattedTitle, realQN);
@@ -141,6 +147,19 @@ public class DownloadRunnable implements Runnable {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	/**
+	 * 已下载视频再次提交时弹窗确认。
+	 * - 关闭弹窗 (isAlertIfDownloded=false)：保持原有行为，直接跳过 (返回 false)
+	 * - 开启弹窗：同步等待用户选择；选择"继续下载"时返回 true，其它情况返回 false
+	 */
+	private boolean askContinueIfDownloaded(String record) {
+		if (!Global.isAlertIfDownloded) {
+			return false;
+		}
+		int r = JOptionPaneManager.confirmReDownload("已下载提示", String.format(MSG_VIDEO_DOWNLOADED, record));
+		return r == 1;
 	}
 
 }

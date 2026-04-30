@@ -179,19 +179,20 @@ public abstract class AbstractBaseParser implements IInputParser {
 	}
 
 	public int[] getVideoQNList(String bvId, String cid) {
-		switch (Global.infoQueryStrategy) {
-		case "tryNormalTypeFirst":
-			return getVideoQNList_TryNormalTypeFirst(bvId, cid);
+		String stra = Global.infoQueryStrategy == null ? "tryNormalTypeFirst" : Global.infoQueryStrategy;
+		switch (stra) {
 		case "judgeTypeFirst":
 			return getVideoQNList_JudgeTypeFirst(bvId, cid);
-		default:
+		case "returnFixedValue":
 			return new int[] { 120, 116, 112, 80, 74, 64, 32, 16 };
+		case "tryNormalTypeFirst":
+		default:
+			return getVideoQNList_TryNormalTypeFirst(bvId, cid);
 		}
 	}
 	
 	private int[] getVideoQNList_JudgeTypeFirst(String bvId, String cid) {
 		HttpHeaders headers = new HttpHeaders();
-		JSONArray jArr = null;
 		// 先判断类型
 		// https://api.bilibili.com/x/web-interface/wbi/view/detail?platform=web&bvid=%s&&need_operation_card=1&web_rm_repeat=1&need_elec=1
 		String url = "https://api.bilibili.com/x/web-interface/wbi/view/detail?platform=web&bvid="
@@ -205,59 +206,81 @@ public abstract class AbstractBaseParser implements IInputParser {
 				.getJSONObject("View");
 		Long aid = infoObj.optLong("aid");
 
+		String rootKey;
+		String json;
 		if (infoObj.optString("redirect_url").isEmpty()) {
 			// 普通类型
 			url = "https://api.bilibili.com/x/player/playurl?cid=%s&bvid=%s&qn=%d&type=&otype=json&fnver=0&fnval=4048&fourk=1";
-			url = String.format(url, cid, bvId, 32);
+			url = String.format(url, cid, bvId, 127);
 			Logger.println(url);
-			String json = util.getContent(url, headers.getBiliJsonAPIHeaders(bvId), HttpCookies.globalCookiesWithFingerprint());
+			json = util.getContent(url, headers.getBiliJsonAPIHeaders(bvId), HttpCookies.globalCookiesWithFingerprint());
 			Logger.println(json);
-			jArr = new JSONObject(json).getJSONObject("data").getJSONArray("accept_quality");
+			rootKey = "data";
 		} else {
 			// 非普通类型
 			url = "https://api.bilibili.com/pgc/player/web/playurl?fnval=4048&fnver=0&fourk=1&otype=json&avid=%s&cid=%s&qn=%s";
-			url = String.format(url, aid, cid, 32);
+			url = String.format(url, aid, cid, 127);
 			Logger.println(url);
-			String json = util.getContent(url, headers.getBiliJsonAPIHeaders("av" + aid),
+			json = util.getContent(url, headers.getBiliJsonAPIHeaders("av" + aid),
 					HttpCookies.globalCookiesWithFingerprint());
 			Logger.println(json);
-			jArr = new JSONObject(json).getJSONObject("result").getJSONArray("accept_quality");
+			rootKey = "result";
 		}
-		int qnList[] = new int[jArr.length()];
-		for (int i = 0; i < qnList.length; i++) {
-			qnList[i] = jArr.getInt(i);
-			// Logger.println(qnList[i]);
-		}
-		return qnList;
+		return extractAvailableQNs(json, rootKey);
 	}
 	
 	private int[] getVideoQNList_TryNormalTypeFirst(String bvId, String cid) {
 		HttpHeaders headers = new HttpHeaders();
-		JSONArray jArr = null;
+		String json;
+		String rootKey;
 		try {
 			// 普通类型
 			String url = "https://api.bilibili.com/x/player/playurl?cid=%s&bvid=%s&qn=%d&type=&otype=json&fnver=0&fnval=4048&fourk=1";
-			url = String.format(url, cid, bvId, 32);
+			url = String.format(url, cid, bvId, 127);
 			Logger.println(url);
-			String json = util.getContent(url, headers.getBiliJsonAPIHeaders(bvId), HttpCookies.globalCookiesWithFingerprint());
+			json = util.getContent(url, headers.getBiliJsonAPIHeaders(bvId), HttpCookies.globalCookiesWithFingerprint());
 			Logger.println(json);
-			jArr = new JSONObject(json).getJSONObject("data").getJSONArray("accept_quality");
+			rootKey = "data";
+			new JSONObject(json).getJSONObject("data").getJSONArray("accept_quality"); // 触发异常以走 pgc 分支
 		} catch (Exception e) {
 			// 非普通类型
 			long aid = ConvertUtil.Bv2Av(bvId);
 			String url = "https://api.bilibili.com/pgc/player/web/playurl?fnval=4048&fnver=0&fourk=1&otype=json&avid=%d&cid=%s&qn=%s";
-			url = String.format(url, aid, cid, 32);
+			url = String.format(url, aid, cid, 127);
 			Logger.println(url);
-			String json = util.getContent(url, headers.getBiliJsonAPIHeaders("av" + aid),
+			json = util.getContent(url, headers.getBiliJsonAPIHeaders("av" + aid),
 					HttpCookies.globalCookiesWithFingerprint());
 			Logger.println(json);
-			jArr = new JSONObject(json).getJSONObject("result").getJSONArray("accept_quality");
+			rootKey = "result";
 		}
-		int qnList[] = new int[jArr.length()];
-		for (int i = 0; i < qnList.length; i++) {
-			qnList[i] = jArr.getInt(i);
-			// Logger.println(qnList[i]);
+		return extractAvailableQNs(json, rootKey);
+	}
+
+	/**
+	 * 优先从 dash.video[].id（去重）抽取当前账号真正可下载的清晰度；
+	 * 若没有 dash 节点（如 mp4-only / 试看），退回 accept_quality（视频源全量）。
+	 */
+	private int[] extractAvailableQNs(String json, String rootKey) {
+		JSONObject root = new JSONObject(json).getJSONObject(rootKey);
+		JSONObject dash = root.optJSONObject("dash");
+		if (dash != null) {
+			JSONArray videos = dash.optJSONArray("video");
+			if (videos != null && videos.length() > 0) {
+				java.util.LinkedHashSet<Integer> set = new java.util.LinkedHashSet<>();
+				for (int i = 0; i < videos.length(); i++) {
+					set.add(videos.getJSONObject(i).getInt("id"));
+				}
+				// 由高到低排序
+				java.util.List<Integer> list = new java.util.ArrayList<>(set);
+				list.sort(java.util.Comparator.reverseOrder());
+				int[] arr = new int[list.size()];
+				for (int i = 0; i < arr.length; i++) arr[i] = list.get(i);
+				return arr;
+			}
 		}
+		JSONArray jArr = root.getJSONArray("accept_quality");
+		int[] qnList = new int[jArr.length()];
+		for (int i = 0; i < qnList.length; i++) qnList[i] = jArr.getInt(i);
 		return qnList;
 	}
 

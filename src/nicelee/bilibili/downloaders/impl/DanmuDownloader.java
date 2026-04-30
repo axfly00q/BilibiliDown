@@ -75,7 +75,9 @@ public class DanmuDownloader implements IDownloader {
 				List<Danmuku> danmuList = xml2AssTool.readXml(xmlfile);
 				// 写入ass文件
 				xml2AssTool.writeAss(danmuList, file);
-				xmlfile.delete();
+				if (!Global.danmuKeepXml) {
+					xmlfile.delete();
+				}
 			}catch (Exception e) {
 				e.printStackTrace();
 			}
