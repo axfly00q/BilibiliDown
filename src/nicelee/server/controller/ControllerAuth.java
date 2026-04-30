@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import nicelee.bilibili.annotations.Controller;
 import nicelee.bilibili.annotations.Value;
+import nicelee.server.auth.LoginRateLimiter;
 import nicelee.server.auth.SessionStore;
 import nicelee.server.util.JsonUtil;
 import nicelee.server.util.ResponseUtil;
@@ -16,7 +17,15 @@ public class ControllerAuth {
 
 	@Controller(path = "/login", matchAll = true, note = "登录, body={username,password}")
 	public String login(BufferedWriter out,
-			@Value(key = "postData") String body) throws IOException {
+			@Value(key = "postData") String body,
+			@Value(key = "ipData") String ip) throws IOException {
+		// 限流：同一 IP 短时间多次失败将被临时锁定，缓解暴力破解
+		long lockedSec = LoginRateLimiter.lockedSecondsRemaining(ip);
+		if (lockedSec > 0) {
+			ResponseUtil.writeJsonStatus(out, 429,
+					JsonUtil.err(429, "too many failed attempts, retry after " + lockedSec + "s"));
+			return null;
+		}
 		String user = extract(body, "username");
 		String pass = extract(body, "password");
 		if (user == null || pass == null) {
@@ -26,9 +35,11 @@ public class ControllerAuth {
 		if (!user.equals(Global.webAuthUsername) || !pass.equals(Global.webAuthPassword)) {
 			// 简单延迟，缓解暴力破解
 			try { Thread.sleep(500); } catch (InterruptedException ignored) {}
+			LoginRateLimiter.onFailure(ip);
 			ResponseUtil.writeJsonStatus(out, 401, JsonUtil.err(401, "invalid credentials"));
 			return null;
 		}
+		LoginRateLimiter.onSuccess(ip);
 		String sid = SessionStore.create(user);
 		ResponseUtil.response200OK(out);
 		ResponseUtil.responseHeader(out, "Content-Type", "application/json; charset=UTF-8");

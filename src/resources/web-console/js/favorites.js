@@ -5,6 +5,9 @@ const $ = (id) => document.getElementById(id);
 function escape(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 let currentFavId = null;
+let allItems = [];     // 当前收藏夹的全部 clip
+let curPage = 1;
+const PAGE_SIZE = 20;
 
 async function init() {
   // 检查 B 站登录态
@@ -57,27 +60,72 @@ $('folders').addEventListener('click', async (e) => {
   currentFavId = li.dataset.id;
   $('title').textContent = li.dataset.title;
   $('submit-all').disabled = true;
-  $('items').innerHTML = '<div class="empty">加载中...</div>';
+  $('items').innerHTML = '<div class="empty">加载中（拉取全部页，可能需要几秒）...</div>';
+  $('pager').hidden = true;
+  allItems = [];
+  curPage = 1;
   try {
     const r = await api.favItems(currentFavId);
     const data = (r && r.data) || {};
-    const items = data.items || [];
-    if (!items.length) {
+    allItems = data.items || [];
+    if (!allItems.length) {
       $('items').innerHTML = '<div class="empty">该收藏夹为空</div>';
       return;
     }
-    $('items').innerHTML = items.map(it =>
-      `<div class="item">
-         ${it.preview ? `<img src="${escape(it.preview)}" referrerpolicy="no-referrer" loading="lazy">` : ''}
-         <div class="body">
-           <div class="title">${escape(it.avTitle || it.title)}</div>
-           <div class="meta">${escape(it.upName || '')} · ${escape(it.avId || '')}</div>
-         </div>
-       </div>`).join('');
+    renderPage();
     $('submit-all').disabled = false;
   } catch (err) {
     $('items').innerHTML = '<div class="empty" style="color:#c33;">' + escape(err.message || 'error') + '</div>';
   }
+});
+
+function renderPage() {
+  const total = allItems.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (curPage > totalPages) curPage = totalPages;
+  if (curPage < 1) curPage = 1;
+  const start = (curPage - 1) * PAGE_SIZE;
+  const slice = allItems.slice(start, start + PAGE_SIZE);
+  $('items').innerHTML = slice.map(it => {
+    const href = it.avId ? ('/console/parse.html?input=' + encodeURIComponent(it.avId)) : '#';
+    return `<a class="item" href="${href}" title="点击解析并下载">
+       ${it.preview ? `<img src="${escape(it.preview)}" referrerpolicy="no-referrer" loading="lazy">` : ''}
+       <div class="body">
+         <div class="title">${escape(it.avTitle || it.title)}</div>
+         <div class="meta">${escape(it.upName || '')} · ${escape(it.avId || '')}</div>
+       </div>
+     </a>`;
+  }).join('');
+  renderPager(totalPages, total);
+}
+
+function renderPager(totalPages, total) {
+  const pg = $('pager');
+  if (totalPages <= 1) { pg.hidden = true; pg.innerHTML = ''; return; }
+  pg.hidden = false;
+  const btns = [];
+  btns.push(`<button data-go="1" ${curPage === 1 ? 'disabled' : ''}>« 首页</button>`);
+  btns.push(`<button data-go="${curPage - 1}" ${curPage === 1 ? 'disabled' : ''}>‹ 上一页</button>`);
+  // 页码（最多显示 7 个，居中当前页）
+  let from = Math.max(1, curPage - 3);
+  let to = Math.min(totalPages, from + 6);
+  from = Math.max(1, to - 6);
+  for (let i = from; i <= to; i++) {
+    btns.push(`<button data-go="${i}" class="${i === curPage ? 'active' : ''}">${i}</button>`);
+  }
+  btns.push(`<button data-go="${curPage + 1}" ${curPage === totalPages ? 'disabled' : ''}>下一页 ›</button>`);
+  btns.push(`<button data-go="${totalPages}" ${curPage === totalPages ? 'disabled' : ''}>末页 »</button>`);
+  btns.push(`<span class="info">第 ${curPage}/${totalPages} 页 · 共 ${total} 个视频</span>`);
+  pg.innerHTML = btns.join('');
+}
+
+$('pager').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-go]');
+  if (!b || b.disabled) return;
+  curPage = parseInt(b.dataset.go, 10) || 1;
+  renderPage();
+  // 滚动到列表顶部
+  document.querySelector('section.panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
 $('submit-all').addEventListener('click', async () => {

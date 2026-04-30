@@ -20,14 +20,21 @@
   .toolbar { display:flex; gap:8px; align-items:center; margin-bottom:10px; flex-wrap:wrap; }
   .toolbar select, .toolbar button { padding:6px 12px; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:6px; font-size:13px; cursor:pointer; }
   .toolbar .primary { background:var(--brand); color:#fff; border-color:var(--brand); }
-  .item-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:10px; max-height:640px; overflow:auto; }
-  .item { border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--surface-2); display:flex; flex-direction:column; }
+  .item-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:10px; }
+  .item { border:1px solid var(--border); border-radius:8px; overflow:hidden; background:var(--surface-2); display:flex; flex-direction:column; cursor:pointer; transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease; text-decoration:none; color:inherit; }
+  .item:hover { transform:translateY(-2px); box-shadow:var(--shadow-md); border-color:var(--brand); }
   .item img { width:100%; height:120px; object-fit:cover; background:#222; }
   .item .body { padding:8px; font-size:12.5px; display:flex; flex-direction:column; gap:4px; }
   .item .title { font-weight:600; color:var(--text); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:34px; }
   .item .meta { color:var(--text-muted); font-size:11.5px; }
   .empty, .notice { text-align:center; padding:40px 20px; color:var(--text-muted); }
   .notice a { color:var(--brand); text-decoration:none; }
+  .pager { display:flex; gap:6px; justify-content:center; align-items:center; margin-top:12px; flex-wrap:wrap; }
+  .pager button { padding:5px 10px; min-width:32px; border:1px solid var(--border); background:var(--surface); color:var(--text); border-radius:6px; cursor:pointer; font-size:12.5px; }
+  .pager button:hover:not(:disabled) { background:var(--surface-2); }
+  .pager button.active { background:var(--brand); color:#fff; border-color:var(--brand); }
+  .pager button:disabled { opacity:.45; cursor:not-allowed; }
+  .pager .info { font-size:12px; color:var(--text-muted); margin:0 6px; }
 </style>
 </head>
 <body>
@@ -35,6 +42,7 @@
   <a href="/console/index.html" data-i18n="nav.home">首页</a>
   <a href="/console/parse.html" data-i18n="nav.parse">解析</a>
   <a href="/console/downloads.html" data-i18n="nav.downloads">下载任务</a>
+  <a href="/console/logs.html" data-i18n="nav.logs">日志</a>
   <a href="/console/settings.html" data-i18n="nav.settings">设置</a>
   <a href="/console/account.html" data-i18n="nav.account">B 站账号</a>
   <a href="/console/favorites.html" class="active" data-i18n="nav.favorites" data-nav-role="bili">收藏夹</a>
@@ -64,6 +72,7 @@
         <button id="submit-all" class="primary" disabled>下载整个收藏夹</button>
       </div>
       <div id="items" class="item-grid"><div class="empty">请从左侧选择一个收藏夹</div></div>
+      <div id="pager" class="pager" hidden></div>
     </section>
   </div>
 </main>

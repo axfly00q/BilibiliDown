@@ -158,10 +158,12 @@ applyI18n();
 injectLangSwitch('.topnav');
 injectThemeSwitch('.topnav');
 applyRoleNav();
-init();
 renderHistoryPanel();
-// 支持 /console/parse.html?input=BVxxx 自动解析
-try {
-  const q = new URLSearchParams(location.search).get('input');
-  if (q) { document.getElementById('input').value = q; doParse(); }
-} catch {}
+// 支持 /console/parse.html?input=BVxxx 自动解析（确保 qualities 已加载完）
+(async () => {
+  await init();
+  try {
+    const q = new URLSearchParams(location.search).get('input');
+    if (q) { document.getElementById('input').value = q; doParse(); }
+  } catch {}
+})();

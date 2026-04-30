@@ -54,6 +54,17 @@ export const api = {
   favList: () => request('GET', '/api/fav/list'),
   favItems: (id) => request('GET', '/api/fav/' + encodeURIComponent(id) + '/items'),
   favSubmitAll: (id, qn) => request('POST', '/api/fav/' + encodeURIComponent(id) + '/submitAll', { qn: String(qn) }),
+  updateCheck: () => request('GET', '/api/update/check'),
+  updateRefresh: () => request('GET', '/api/update/refresh'),
+  logsTail: (since, level, limit) => {
+    const qs = new URLSearchParams();
+    if (since != null) qs.set('since', String(since));
+    if (level) qs.set('level', level);
+    if (limit) qs.set('limit', String(limit));
+    const s = qs.toString();
+    return request('GET', '/api/logs' + (s ? ('?' + s) : ''));
+  },
+  logsSeq: () => request('GET', '/api/logs/seq'),
 };
 
 export function fmtBytes(b) {

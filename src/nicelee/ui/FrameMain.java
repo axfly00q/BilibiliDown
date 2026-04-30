@@ -40,6 +40,8 @@ public class FrameMain extends JFrame {
 	MJTitleBar titleBar;// 标题栏组件
 
 	public static void main(String[] args) {
+		// 第一时间安装日志环形缓冲，拦截 System.out / System.err，供 Web /api/logs 实时拉取
+		nicelee.server.util.LogRingBuffer.install();
 		System.out.println();
 		// System.getProperties().setProperty("file.encoding", "utf-8");
 		boolean isFFmpegSupported = SysUtil.surportFFmpegOfficially();

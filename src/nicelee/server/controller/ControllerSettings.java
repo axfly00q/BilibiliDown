@@ -22,21 +22,34 @@ import nicelee.ui.Global;
 @Controller(path = "/api/settings", note = "Web 控制台 - 设置")
 public class ControllerSettings {
 
-	/** 字段元数据：key, type(string|int|bool|select), valids(逗号分隔, select用), note */
+	/** 字段元数据：key, type(string|int|bool|select), valids(逗号分隔, select用), note, desc(详细说明) */
 	private static final String[][] SCHEMA = new String[][] {
-			{ "bilibili.savePath", "string", "", "下载文件保存路径（重启生效）" },
-			{ "bilibili.download.poolSize", "int", "", "最大同时下载任务数（重启生效）" },
-			{ "bilibili.download.maxFailRetry", "int", "", "下载失败重试次数" },
-			{ "bilibili.format", "select", "0,1,2", "优先下载格式 0=MP4(合并) 1=FLV 2=MP4(单流)" },
-			{ "bilibili.name.format", "string", "", "下载文件命名格式（语法详见 app.config）" },
-			{ "bilibili.repo", "select", "on,off", "是否使用仓库去重" },
-			{ "bilibili.repo.save", "select", "on,off", "是否保存下载记录" },
-			{ "bilibili.alert.isAlertIfDownloded", "bool", "true,false", "已下载视频再次提交时弹窗提示" },
-			{ "bilibili.web.auth.enable", "bool", "true,false", "Web 控制台启用账号密码鉴权（重启生效）" },
-			{ "bilibili.web.auth.username", "string", "", "Web 控制台登录用户名" },
-			{ "bilibili.web.auth.password", "string", "", "Web 控制台登录密码（留空将自动生成）" },
-			{ "bilibili.userAgent.pc", "string", "", "HTTP 请求 User-Agent" },
-			{ "bilibili.frontend.lang", "select", "auto,zh-CN,en-US,ja-JP", "前端页面语言" },
+			{ "bilibili.savePath", "string", "", "下载文件保存路径（重启生效）",
+					"所有视频/音频/封面下载后保存的根目录。可填相对路径（相对于程序运行目录）或绝对路径。修改后需重启程序生效。" },
+			{ "bilibili.download.poolSize", "int", "", "最大同时下载任务数（重启生效）",
+					"同一时刻并行下载的任务数量。值越大下载越快，但占用带宽和 CPU 越多，过大可能触发 B 站限流。建议 2~5。修改后需重启生效。" },
+			{ "bilibili.download.maxFailRetry", "int", "", "下载失败重试次数",
+					"单个分片或任务下载失败时的自动重试次数。网络不稳定时可调大。0 表示不重试。" },
+			{ "bilibili.format", "select", "0,1,2", "优先下载格式 0=MP4(合并) 1=FLV 2=MP4(单流)",
+					"0：dash 流分别下载视频/音频再用 ffmpeg 合并成 mp4（推荐，画质最好）；1：FLV 单文件，老格式，部分清晰度不可用；2：MP4 单流，无需 ffmpeg 但可选清晰度少。" },
+			{ "bilibili.name.format", "string", "", "下载文件命名格式（语法详见 app.config）",
+					"占位符如 avTitle/avId/upName/listName/favTime 等会被实际值替换；详见 app.config 注释。例如 (:listName 0_listName\\)\\\\UpName\\\\avTitle。" },
+			{ "bilibili.repo", "select", "on,off", "是否使用仓库去重",
+					"on：在提交下载前先检查 download-history.json，已下载过的视频会跳过；off：每次都重新下载。" },
+			{ "bilibili.repo.save", "select", "on,off", "是否保存下载记录",
+					"on：成功下载后写入 download-history.json，作为后续去重依据；off：不写记录（关闭后去重也会失效）。" },
+			{ "bilibili.alert.isAlertIfDownloded", "bool", "true,false", "已下载视频再次提交时弹窗提示",
+					"true：在桌面端再次解析/提交一个已下载过的视频时弹窗提醒；false：静默重复下载（仍受去重影响）。" },
+			{ "bilibili.web.auth.enable", "bool", "true,false", "Web 控制台启用账号密码鉴权（重启生效）",
+					"true：访问 /console/* 需要登录（账号密码下两项配置）；false：任何人访问本机 8787 端口都可使用控制台（仅本地访问时较安全）。" },
+			{ "bilibili.web.auth.username", "string", "", "Web 控制台登录用户名",
+					"启用鉴权后用于登录 Web 控制台的用户名，默认 admin。" },
+			{ "bilibili.web.auth.password", "string", "", "Web 控制台登录密码（留空将自动生成）",
+					"启用鉴权后用于登录 Web 控制台的密码。留空时程序首次启动会随机生成并打印到日志/桌面端。" },
+			{ "bilibili.userAgent.pc", "string", "", "HTTP 请求 User-Agent",
+					"程序请求 B 站 API 时使用的 UA，默认是 Firefox。除非遇到反爬错误，一般不要改动。" },
+			{ "bilibili.frontend.lang", "select", "auto,zh-CN,en-US,ja-JP", "前端页面语言",
+					"auto：跟随浏览器；zh-CN/en-US/ja-JP：强制指定语言。修改后下次刷新页面生效。" },
 	};
 
 	@Controller(path = "/list", matchAll = true, note = "GET 读取当前设置")
@@ -57,6 +70,7 @@ public class ControllerSettings {
 					.append(JsonUtil.kv("type", row[1])).append(',')
 					.append(JsonUtil.kv("valids", row[2])).append(',')
 					.append(JsonUtil.kv("note", row[3])).append(',')
+					.append(JsonUtil.kv("desc", row.length > 4 ? row[4] : "")).append(',')
 					.append(JsonUtil.kv("value", value))
 					.append('}');
 		}

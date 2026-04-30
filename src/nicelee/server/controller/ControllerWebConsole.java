@@ -72,6 +72,12 @@ public class ControllerWebConsole {
 		return null;
 	}
 
+	@Controller(path = "/logs.html", matchAll = true, note = "实时日志页")
+	public String logs(BufferedWriter out, OutputStream outRaw, @Value(key = "pathData") String path) {
+		makeFileResponse(out, outRaw, path.substring(8), "text/html; charset=UTF-8");
+		return null;
+	}
+
 	@Controller(path = "/js/", matchAll = false, note = "JS 资源")
 	public String js(BufferedWriter out, OutputStream outRaw, @Value(key = "pathData") String path) {
 		makeFileResponse(out, outRaw, path.substring(8), "application/javascript; charset=UTF-8");

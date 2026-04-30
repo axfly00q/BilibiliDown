@@ -1,5 +1,6 @@
 import { api } from '/console/js/api.js';
 import { applyI18n, injectLangSwitch, injectThemeSwitch, applyRoleNav } from '/console/js/i18n.js';
+import { manualCheckUpdate } from '/console/js/update.js';
 const $ = (id) => document.getElementById(id);
 function escape(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 2000); }
@@ -29,7 +30,7 @@ function fieldHtml(f) {
   }
   return `<div class="field">
     <div class="label">${escape(f.note || f.key)}<span class="key">${escape(f.key)}</span></div>
-    <div class="ctl">${ctl}<div class="note" id="${id}_note"></div></div>
+    <div class="ctl">${ctl}<div class="note" id="${id}_note">${escape(f.desc || '')}</div></div>
   </div>`;
 }
 
@@ -81,6 +82,8 @@ async function save() {
 
 $('reload').onclick = load;
 $('save').onclick = save;
+const cuBtn = document.getElementById('check-update');
+if (cuBtn) cuBtn.onclick = () => manualCheckUpdate();
 // 控制台密码鉴权已弃用，原“登出控制台”按钮已从页面移除。
 
 // === 目录选择器 ===

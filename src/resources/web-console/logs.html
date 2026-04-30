@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日志 · BilibiliDown</title>
+<link href="/console/css/style.css" rel="stylesheet">
+<style>
+  .topnav { display:flex; gap:12px; padding:10px 18px; border-bottom:1px solid var(--border); background:var(--surface); }
+  .topnav a { text-decoration:none; color:var(--text-muted); font-size:13.5px; }
+  .topnav a.active { color:var(--brand); font-weight:600; }
+  .wrap { max-width: 1400px; margin: 18px auto; padding: 0 14px; }
+  .toolbar { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; align-items:center; }
+  .toolbar select, .toolbar input, .toolbar button {
+    padding:6px 10px; border:1px solid var(--border); background:var(--surface);
+    color:var(--text); border-radius:6px; font-size:13px;
+  }
+  .toolbar button { cursor:pointer; }
+  .toolbar .danger { color:#c33; }
+  .toolbar label { font-size:12.5px; color:var(--text-muted); display:flex; align-items:center; gap:4px; }
+  #status { color:var(--text-muted); font-size:12px; margin-left:auto; }
+  .log-pane {
+    background: #0d1117; color: #c9d1d9;
+    border: 1px solid var(--border); border-radius: var(--radius-md);
+    padding: 10px 14px; font: 12.5px/1.55 ui-monospace, "SF Mono", Consolas, monospace;
+    height: calc(100vh - 200px); overflow:auto; white-space:pre-wrap; word-break:break-all;
+  }
+  body[data-theme="light"] .log-pane { background:#fafafa; color:#222; }
+  .ln { display:flex; gap:10px; padding:1px 0; }
+  .ln .ts { color:#7d8590; flex:0 0 80px; }
+  .ln .lv { flex:0 0 50px; font-weight:600; }
+  .ln .lv.INFO { color:#58a6ff; }
+  .ln .lv.ERROR { color:#ff7b72; }
+  body[data-theme="light"] .ln .ts { color:#888; }
+  body[data-theme="light"] .ln .lv.INFO { color:#0969da; }
+  body[data-theme="light"] .ln .lv.ERROR { color:#d1242f; }
+  .ln .tx { flex:1; }
+  .ln mark { background:#ffd33d; color:#000; padding:0 2px; border-radius:2px; }
+  .empty { text-align:center; padding:40px; color:var(--text-muted); }
+</style>
+</head>
+<body>
+<nav class="topnav">
+  <a href="/console/index.html" data-i18n="nav.home">首页</a>
+  <a href="/console/parse.html" data-i18n="nav.parse">解析</a>
+  <a href="/console/downloads.html" data-i18n="nav.downloads">下载任务</a>
+  <a href="/console/logs.html" class="active" data-i18n="nav.logs">日志</a>
+  <a href="/console/settings.html" data-i18n="nav.settings">设置</a>
+  <a href="/console/account.html" data-i18n="nav.account">B 站账号</a>
+  <a href="/console/favorites.html" data-i18n="nav.favorites" data-nav-role="bili">收藏夹</a>
+  <a href="/console/history.html" data-i18n="nav.history" data-nav-role="bili">历史记录</a>
+</nav>
+<main class="wrap">
+  <div class="toolbar">
+    <label><span data-i18n="logs.level">级别</span>
+      <select id="level">
+        <option value="" data-i18n="logs.all">全部</option>
+        <option value="INFO">INFO</option>
+        <option value="ERROR">ERROR</option>
+      </select>
+    </label>
+    <input id="filter" type="text" placeholder="关键字过滤（前端高亮）" data-i18n-attr="placeholder:logs.filterPh" style="width:240px;">
+    <label><input type="checkbox" id="autoscroll" checked> <span data-i18n="logs.autoscroll">自动滚动</span></label>
+    <label><input type="checkbox" id="paused"> <span data-i18n="logs.pause">暂停</span></label>
+    <button id="clear" data-i18n="logs.clear">清屏</button>
+    <button id="copy" data-i18n="logs.copy">复制可见</button>
+    <button id="reload" data-i18n="logs.reload">重新加载</button>
+    <span id="status">—</span>
+  </div>
+  <div id="pane" class="log-pane"><div class="empty" data-i18n="logs.loading">加载中…</div></div>
+</main>
+<script type="module" src="/console/js/logs.js"></script>
+</body>
+</html>

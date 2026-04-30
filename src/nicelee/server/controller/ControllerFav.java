@@ -89,18 +89,41 @@ public class ControllerFav {
 	}
 
 	private String listItems(BufferedWriter out, String favId) throws IOException {
-		// 复用桌面端已有的 MLParser，通过 ParseService 把整个收藏夹解析为 VideoInfo（含全部 clips）
-		VideoInfo info = ParseService.getDetail("ml" + favId);
-		if (info == null || info.getClips() == null) {
-			ResponseUtil.writeJsonStatus(out, 502, JsonUtil.err(502, "收藏夹解析失败"));
+		// 拉取全部页：Global.pageSize 默认 5，桌面端依赖该值分页展示。Web 控制台需要"整个收藏夹"，
+		// 因此循环 p=1..N 调用 ParseService.getDetail，直到返回空或与上一页相同。
+		LinkedHashMap<Long, ClipInfo> all = new LinkedHashMap<>();
+		String title = "", owner = "";
+		final int MAX_PAGES = 200; // 安全上限：5/页 * 200 = 1000 视频；20/页 * 200 = 4000
+		int prevSize = -1;
+		for (int page = 1; page <= MAX_PAGES; page++) {
+			VideoInfo info = ParseService.getDetail("ml" + favId + "p=" + page);
+			if (info == null || info.getClips() == null) break;
+			if (page == 1) {
+				title = info.getVideoName() == null ? "" : info.getVideoName();
+				owner = info.getAuthor() == null ? "" : info.getAuthor();
+			}
+			LinkedHashMap<Long, ClipInfo> pageClips = info.getClips();
+			if (pageClips.isEmpty()) break;
+			int beforeMerge = all.size();
+			for (java.util.Map.Entry<Long, ClipInfo> e : pageClips.entrySet()) {
+				if (!all.containsKey(e.getKey())) all.put(e.getKey(), e.getValue());
+			}
+			// 该页没有带来任何新数据 => 已到末页（或 API 异常返回相同页）
+			if (all.size() == beforeMerge) break;
+			// 页内数量 < 单页大小，认为是末页
+			if (prevSize >= 0 && pageClips.size() < prevSize) break;
+			prevSize = pageClips.size();
+		}
+		if (all.isEmpty()) {
+			ResponseUtil.writeJsonStatus(out, 502, JsonUtil.err(502, "收藏夹解析失败或为空"));
 			return null;
 		}
 		StringBuilder sb = new StringBuilder("{");
-		sb.append(JsonUtil.kv("title", info.getVideoName() == null ? "" : info.getVideoName())).append(',')
-				.append(JsonUtil.kv("owner", info.getAuthor() == null ? "" : info.getAuthor())).append(',')
+		sb.append(JsonUtil.kv("title", title)).append(',')
+				.append(JsonUtil.kv("owner", owner)).append(',')
 				.append("\"items\":[");
 		boolean first = true;
-		for (ClipInfo c : info.getClips().values()) {
+		for (ClipInfo c : all.values()) {
 			if (!first) sb.append(',');
 			first = false;
 			sb.append('{')
@@ -120,18 +143,35 @@ public class ControllerFav {
 
 	private String submitAll(BufferedWriter out, String favId, String body) throws IOException {
 		int qn = parseInt(jsonStr(body, "qn"), 80);
-		VideoInfo info = ParseService.getDetail("ml" + favId);
-		if (info == null || info.getClips() == null) {
-			ResponseUtil.writeJsonStatus(out, 502, JsonUtil.err(502, "收藏夹解析失败"));
+		// 与 listItems 一致，循环全部页
+		LinkedHashMap<Long, ClipInfo> all = new LinkedHashMap<>();
+		VideoInfo refInfo = null;
+		final int MAX_PAGES = 200;
+		int prevSize = -1;
+		for (int page = 1; page <= MAX_PAGES; page++) {
+			VideoInfo info = ParseService.getDetail("ml" + favId + "p=" + page);
+			if (info == null || info.getClips() == null) break;
+			if (refInfo == null) refInfo = info;
+			LinkedHashMap<Long, ClipInfo> pageClips = info.getClips();
+			if (pageClips.isEmpty()) break;
+			int beforeMerge = all.size();
+			for (java.util.Map.Entry<Long, ClipInfo> e : pageClips.entrySet()) {
+				if (!all.containsKey(e.getKey())) all.put(e.getKey(), e.getValue());
+			}
+			if (all.size() == beforeMerge) break;
+			if (prevSize >= 0 && pageClips.size() < prevSize) break;
+			prevSize = pageClips.size();
+		}
+		if (refInfo == null || all.isEmpty()) {
+			ResponseUtil.writeJsonStatus(out, 502, JsonUtil.err(502, "收藏夹解析失败或为空"));
 			return null;
 		}
 		int n = 0;
-		LinkedHashMap<Long, ClipInfo> clips = info.getClips();
-		Iterator<ClipInfo> it = clips.values().iterator();
+		Iterator<ClipInfo> it = all.values().iterator();
 		while (it.hasNext()) {
 			ClipInfo c = it.next();
 			try {
-				DownloadService.submit(info, c, qn);
+				DownloadService.submit(refInfo, c, qn);
 				n++;
 			} catch (Exception ignored) {}
 		}
