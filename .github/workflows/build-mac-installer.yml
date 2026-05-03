@@ -1,0 +1,38 @@
+name: Build Mac DMG (Manual trigger)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_number:
+        description: 'The version to build. e.g. 6.50'
+        required: false
+        type: string
+        default: '6.50'
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up JDK 21
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+
+    - name: Build DMG
+      env:
+        APP_VERSION: ${{ inputs.version_number }}
+      run: |
+        chmod +x package-mac-installer.sh
+        ./package-mac-installer.sh
+
+    - name: Upload DMG artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: BilibiliDown.v${{ inputs.version_number }}.mac
+        path: dist/*.dmg
+        retention-days: 7
